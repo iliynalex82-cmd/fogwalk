@@ -22,6 +22,13 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Generate Xcode project
+        run: |
+          if ! command -v xcodegen >/dev/null 2>&1; then
+            brew install xcodegen
+          fi
+          cd iosApp && xcodegen generate
+
       - name: Build iOS Simulator app
         run: |
           xcodebuild \

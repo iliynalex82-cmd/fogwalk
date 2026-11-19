@@ -1,0 +1,34 @@
+name: iosApp
+options:
+  bundleIdPrefix: app.fogwalk
+  deploymentTarget:
+    iOS: "15.0"
+settings:
+  base:
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    PRODUCT_NAME: Fogwalk
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+targets:
+  iosApp:
+    type: application
+    platform: iOS
+    sources:
+      - iosApp
+    info:
+      path: iosApp/Info.plist
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.fogwalk.ios
+        FRAMEWORK_SEARCH_PATHS:
+          - "$(inherited)"
+          - "$(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)"
+        OTHER_LDFLAGS:
+          - "$(inherited)"
+          - "-framework"
+          - "Shared"
+    preBuildScripts:
+      - name: Compile Kotlin Framework
+        script: |
+          cd "$SRCROOT/.."
+          ./gradlew :shared:embedAndSignAppleFrameworkForXcode
