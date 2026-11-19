@@ -39,5 +39,15 @@
 	</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Fogwalk uses your location to reveal the map fog as you walk.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Fogwalk uses background location to keep revealing the map while your screen is off.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Fogwalk counts your steps during walks.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
 </dict>
 </plist>

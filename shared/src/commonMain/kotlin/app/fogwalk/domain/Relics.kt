@@ -1,7 +1,5 @@
 package app.fogwalk.domain
 
-import java.time.LocalDate
-
 /** A collectible found in caches. Names and lore live in [app.fogwalk.content.Content]. */
 data class Relic(val id: String, val set: String, val rarity: Rarity)
 
@@ -93,8 +91,31 @@ object Relics {
 
 /** The four seasons by month, turned around south of the equator. */
 object Seasons {
+    private fun civilFromDays(z: Long): Triple<Int, Int, Int> {
+        val zz = z + 719468L
+        val era = (if (zz >= 0) zz else zz - 146096L) / 146097L
+        val doe = zz - era * 146097L
+        val yoe = (doe - doe / 1460L + doe / 36524L - doe / 146096L) / 365L
+        val y = yoe + era * 400L
+        val doy = doe - (365L * yoe + yoe / 4L - yoe / 100L)
+        val mp = (5L * doy + 2L) / 153L
+        val d = doy - (153L * mp + 2L) / 5L + 1L
+        val m = mp + (if (mp < 10L) 3L else -9L)
+        val year = y + (if (m <= 2L) 1L else 0L)
+        return Triple(year.toInt(), m.toInt(), d.toInt())
+    }
+
+    private fun daysFromCivil(y: Int, m: Int, d: Int): Long {
+        val yy = y.toLong() - (if (m <= 2) 1L else 0L)
+        val era = (if (yy >= 0) yy else yy - 399L) / 400L
+        val yoe = yy - era * 400L
+        val doy = (153L * (m + (if (m > 2) -3 else 9)) + 2L) / 5L + d - 1L
+        val doe = yoe * 365L + yoe / 4L - yoe / 100L + doy
+        return era * 146097L + doe - 719468L
+    }
+
     fun of(epochDay: Long, lat: Double = 0.0): String {
-        val month = LocalDate.ofEpochDay(epochDay).monthValue
+        val (_, month, _) = civilFromDays(epochDay)
         val north = (month % 12) / 3
         val i = if (lat < 0) (north + 2) % 4 else north
         return listOf("winter", "spring", "summer", "autumn")[i]
@@ -102,9 +123,10 @@ object Seasons {
 
     /** The first day of the season after the one [epochDay] falls in. */
     fun nextStart(epochDay: Long): Long {
-        val d = LocalDate.ofEpochDay(epochDay)
-        val start = LocalDate.of(d.year, (d.monthValue % 12) / 3 * 3 + 3, 1)
-        return (if (start.isAfter(d)) start else start.plusYears(1)).toEpochDay()
+        val (year, month, _) = civilFromDays(epochDay)
+        val startMonth = (month % 12) / 3 * 3 + 3
+        val start = daysFromCivil(year, startMonth, 1)
+        return if (start > epochDay) start else daysFromCivil(year + 1, startMonth, 1)
     }
 
     /** When [set] next begins, counting from [epochDay]; [epochDay] itself while it is on. */

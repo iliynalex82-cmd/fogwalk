@@ -3,7 +3,7 @@ package app.fogwalk.content
 import app.fogwalk.domain.Badge
 import app.fogwalk.domain.Quest
 import app.fogwalk.domain.Rarity
-import java.util.Locale
+import kotlin.math.roundToLong
 
 /** Words of the world in one language: relics, sectors, ranks, badges, quests and nudges. */
 interface Content {
@@ -42,7 +42,7 @@ interface Content {
     fun waysideFind(kind: app.fogwalk.domain.Wayside.Kind, variant: Int): String
 
     companion object {
-        fun of(locale: Locale): Content = if (locale.language == "ru") ContentRu else ContentEn
+        fun of(languageCode: String): Content = if (languageCode == "ru") ContentRu else ContentEn
 
         /** Adjective and noun indexes for a sector: the same pair in every language. */
         fun sectorWords(sector: Long, adjectives: Int, nouns: Int): Pair<Int, Int> {
@@ -53,8 +53,18 @@ interface Content {
         }
 
         fun km2(km2: Double): String = when {
-            km2 < 0.1 -> String.format(Locale.ROOT, "%.2f", km2)
-            km2 < 10 -> String.format(Locale.ROOT, "%.1f", km2).removeSuffix(".0")
+            km2 < 0.1 -> {
+                val scaled = (km2 * 100.0).roundToLong()
+                val whole = scaled / 100
+                val frac = (scaled % 100).toString().padStart(2, '0')
+                "$whole.$frac"
+            }
+            km2 < 10 -> {
+                val scaled = (km2 * 10.0).roundToLong()
+                val whole = scaled / 10
+                val frac = scaled % 10
+                if (frac == 0L) whole.toString() else "$whole.$frac"
+            }
             else -> km2.toInt().toString()
         }
     }
