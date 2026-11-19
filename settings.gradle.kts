@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Fogwalk"
 include(":app")
+include(":shared")
